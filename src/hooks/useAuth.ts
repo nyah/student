@@ -35,12 +35,22 @@ export function useAuth() {
         // Get current session
         const { data: { session }, error } = await supabase.auth.getSession()
 
-        if (error) throw error
+        if (error) {
+          console.error('Error getting session:', error)
+          if (mounted) reset()
+          return
+        }
 
         if (mounted) {
           if (session?.user) {
             setUser(session.user)
-            await fetchProfile(session.user.id)
+            // Try to fetch profile, but don't block if it fails
+            try {
+              await fetchProfile(session.user.id)
+            } catch (profileError) {
+              console.error('Error fetching profile:', profileError)
+              // Continue anyway - user is authenticated even if profile fetch fails
+            }
           } else {
             reset()
           }
@@ -61,7 +71,11 @@ export function useAuth() {
 
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user)
-        await fetchProfile(session.user.id)
+        try {
+          await fetchProfile(session.user.id)
+        } catch (error) {
+          console.error('Error fetching profile after sign in:', error)
+        }
       } else if (event === 'SIGNED_OUT') {
         reset()
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {

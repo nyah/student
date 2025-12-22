@@ -2,6 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { PublicRoute } from '@/components/auth/PublicRoute'
 import { RoleGuard } from '@/components/auth/RoleGuard'
+import { isSupabaseConfigured } from '@/lib/supabase/client'
+
+// Setup Page
+import { SetupRequired } from '@/pages/SetupRequired'
 
 // Auth Pages
 import { Login } from '@/pages/auth/Login'
@@ -14,6 +18,11 @@ import { Dashboard } from '@/pages/student/Dashboard'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 
 export function AppRouter() {
+  // Si Supabase no está configurado, mostrar página de setup
+  if (!isSupabaseConfigured()) {
+    return <SetupRequired />
+  }
+
   return (
     <BrowserRouter>
       <Routes>

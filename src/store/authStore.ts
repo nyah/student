@@ -19,20 +19,32 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   isAuthenticated: false,
 
-  setUser: (user) => set({
-    user,
-    isAuthenticated: !!user,
-    isLoading: false
-  }),
+  setUser: (user) => {
+    console.log('[AuthStore] setUser:', user?.email, 'isAuthenticated:', !!user)
+    set({
+      user,
+      isAuthenticated: !!user,
+      isLoading: false
+    })
+  },
 
-  setProfile: (profile) => set({ profile }),
+  setProfile: (profile) => {
+    console.log('[AuthStore] setProfile:', profile?.email, 'role:', profile?.role)
+    set({ profile })
+  },
 
-  setLoading: (isLoading) => set({ isLoading }),
+  setLoading: (isLoading) => {
+    console.log('[AuthStore] setLoading:', isLoading)
+    set({ isLoading })
+  },
 
-  reset: () => set({
-    user: null,
-    profile: null,
-    isAuthenticated: false,
-    isLoading: false
-  }),
+  reset: () => {
+    console.log('[AuthStore] reset')
+    set({
+      user: null,
+      profile: null,
+      isAuthenticated: false,
+      isLoading: false
+    })
+  },
 }))

@@ -30,16 +30,19 @@ export function useAuth() {
 
     const initAuth = async () => {
       try {
+        console.log('[useAuth] Starting initAuth')
         setLoading(true)
 
         // Get current session
         const { data: { session }, error } = await supabase.auth.getSession()
 
         if (error) {
-          console.error('Error getting session:', error)
+          console.error('[useAuth] Error getting session:', error)
           if (mounted) reset()
           return
         }
+
+        console.log('[useAuth] Session:', session?.user?.email || 'none')
 
         if (mounted) {
           if (session?.user) {
@@ -48,7 +51,7 @@ export function useAuth() {
             try {
               await fetchProfile(session.user.id)
             } catch (profileError) {
-              console.error('Error fetching profile:', profileError)
+              console.error('[useAuth] Error fetching profile:', profileError)
               // Continue anyway - user is authenticated even if profile fetch fails
             }
           } else {
@@ -56,10 +59,8 @@ export function useAuth() {
           }
         }
       } catch (error) {
-        console.error('Error initializing auth:', error)
+        console.error('[useAuth] Error initializing auth:', error)
         if (mounted) reset()
-      } finally {
-        if (mounted) setLoading(false)
       }
     }
 
@@ -67,6 +68,7 @@ export function useAuth() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[useAuth] Auth state changed:', event)
       if (!mounted) return
 
       if (event === 'SIGNED_IN' && session?.user) {
@@ -74,7 +76,7 @@ export function useAuth() {
         try {
           await fetchProfile(session.user.id)
         } catch (error) {
-          console.error('Error fetching profile after sign in:', error)
+          console.error('[useAuth] Error fetching profile after sign in:', error)
         }
       } else if (event === 'SIGNED_OUT') {
         reset()
@@ -84,10 +86,12 @@ export function useAuth() {
     })
 
     return () => {
+      console.log('[useAuth] Cleanup')
       mounted = false
       subscription.unsubscribe()
     }
-  }, [setUser, setLoading, reset, fetchProfile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // CRITICAL: Empty dependency array to run only once
 
   // Sign up
   const signUp = useCallback(async (

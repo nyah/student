@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/authStore'
-import type { User } from '@supabase/supabase-js'
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -84,7 +83,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [setUser, setProfile, setLoading, reset])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - Zustand setters are stable
 
   // Don't render children until auth is initialized
   if (!initialized) {

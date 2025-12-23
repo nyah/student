@@ -6,16 +6,8 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
   const location = useLocation()
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eai-blue"></div>
-      </div>
-    )
-  }
 
   if (!isAuthenticated) {
     // Redirect to login but save the location they were trying to access

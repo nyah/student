@@ -1,97 +1,10 @@
-import { useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/authStore'
 import type { UserRole } from '@/types/models'
 
 export function useAuth() {
-  const { user, profile, isLoading, isAuthenticated, setUser, setProfile, setLoading, reset } = useAuthStore()
-
-  // Fetch profile data
-  const fetchProfile = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setProfile(data)
-      return data
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-      return null
-    }
-  }, [setProfile])
-
-  // Initialize auth state
-  useEffect(() => {
-    let mounted = true
-
-    const initAuth = async () => {
-      try {
-        console.log('[useAuth] Starting initAuth')
-        setLoading(true)
-
-        // Get current session
-        const { data: { session }, error } = await supabase.auth.getSession()
-
-        if (error) {
-          console.error('[useAuth] Error getting session:', error)
-          if (mounted) reset()
-          return
-        }
-
-        console.log('[useAuth] Session:', session?.user?.email || 'none')
-
-        if (mounted) {
-          if (session?.user) {
-            setUser(session.user)
-            // Try to fetch profile, but don't block if it fails
-            try {
-              await fetchProfile(session.user.id)
-            } catch (profileError) {
-              console.error('[useAuth] Error fetching profile:', profileError)
-              // Continue anyway - user is authenticated even if profile fetch fails
-            }
-          } else {
-            reset()
-          }
-        }
-      } catch (error) {
-        console.error('[useAuth] Error initializing auth:', error)
-        if (mounted) reset()
-      }
-    }
-
-    initAuth()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[useAuth] Auth state changed:', event)
-      if (!mounted) return
-
-      if (event === 'SIGNED_IN' && session?.user) {
-        setUser(session.user)
-        try {
-          await fetchProfile(session.user.id)
-        } catch (error) {
-          console.error('[useAuth] Error fetching profile after sign in:', error)
-        }
-      } else if (event === 'SIGNED_OUT') {
-        reset()
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        setUser(session.user)
-      }
-    })
-
-    return () => {
-      console.log('[useAuth] Cleanup')
-      mounted = false
-      subscription.unsubscribe()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // CRITICAL: Empty dependency array to run only once
+  const { user, profile, isLoading, isAuthenticated, reset } = useAuthStore()
 
   // Sign up
   const signUp = useCallback(async (
